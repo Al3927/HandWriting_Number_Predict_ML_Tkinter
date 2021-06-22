@@ -52,7 +52,7 @@ def center_of_mass(image):
 
 def predict():
     deleteText()
-    createTextWait()
+    createText("","   PLEASE WAIT...  ")
 
     # Step 1. crop and transform
     bbox = image1.getbbox()
@@ -77,29 +77,10 @@ def predict():
 def btn_clicked():
     print("Button Clicked")
 
-def createTextWait():
-
+def createText(x, pre_text = "THIS IS NUMBER: "):
     canvas.create_text(
         709.0, 424.0,
-        text=f"   PLEASE WAIT...  ",
-        fill="#d60000",
-        font=("Roboto-Bold", int(15.0)),
-        tag = "predict_text")
-
-def createTextReady():
-    
-    canvas.create_text(
-        709.0, 424.0,
-        text=f"READY",
-        fill="#d60000",
-        font=("Roboto-Bold", int(15.0)),
-        tag = "predict_text")
-
-
-def createText(x):
-    canvas.create_text(
-        709.0, 424.0,
-        text=f"THIS IS NUMBER: {x}",
+        text=f"{pre_text}{x}",
         fill="#d60000",
         font=("Roboto-Bold", int(15.0)),
         tag = "predict_text")
@@ -109,7 +90,7 @@ def deleteText():
 def clear_frame():
     cv.delete('all')
     deleteText()
-    createTextReady()
+    createText("","READY")
     draw.rectangle((0, 0, 435, 308), fill="black")
 
 def get_x_and_y(event):
