@@ -52,7 +52,14 @@ def center_of_mass(image):
 
 def predict():
     deleteText()
-    createText("","   PLEASE WAIT...  ")
+    load = Label(
+        master = window,
+        text=f"PREDICTING...",
+        fg="#d60000",
+        bg="#ffffff",
+        font=("Roboto-Bold", int(15.0)))
+    load.place(x=645.0, y=412.0)
+    load.update_idletasks()
 
     # Step 1. crop and transform
     bbox = image1.getbbox()
@@ -70,7 +77,8 @@ def predict():
     data = data.flatten()
 
     y_pred = pipe.predict([data, ])
-    
+
+    load.destroy()
     deleteText()
     createText(y_pred[0])
 
