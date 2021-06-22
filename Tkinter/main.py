@@ -35,7 +35,11 @@ def center_of_mass(image):
 
     (w, h) = image.size
     ratio = max(w, h) / 20
-    image = image.resize((int(w // ratio), int(h // ratio)), PIL.Image.ANTIALIAS)
+    print(int(w // ratio), int(h // ratio))
+    if(min(int(w // ratio), int(h // ratio)) <= 0):
+        image = image.resize((int(w // ratio) + 1, int(h // ratio) + 1), PIL.Image.ANTIALIAS)
+    else:
+        image = image.resize((int(w // ratio), int(h // ratio)), PIL.Image.ANTIALIAS)
     
     # get center_of_mass of image
     cy, cx = ndimage.measurements.center_of_mass(np.array(image.convert('L')))
