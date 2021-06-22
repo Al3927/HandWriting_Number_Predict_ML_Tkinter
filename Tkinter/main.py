@@ -3,8 +3,13 @@ from tkinter import *
 from PIL import ImageTk, Image, ImageDraw, ImageGrab
 import PIL
 import numpy as np
-import pickle
-import HOG_and_Sobel
+import joblib
+from  HOG_and_Sobel import *
+from scipy import ndimage
+from sklearn.base import BaseEstimator, TransformerMixin
+
+# Step 0. Load model 
+pipe = joblib.load('pickle_model.pkl')
 
 def onEnter_btn0(event):
     global img
@@ -26,24 +31,30 @@ def onLeave_btn1(event):
     img11 = ImageTk.PhotoImage(Image.open(r'img1.png'))
     b1.config(image=img11)
 
-def center(image):
+def center_of_mass(image):
 
-    image = image.convert('RGBA')
-    image = image.resize((20, 20), PIL.Image.ANTIALIAS)
+    (w, h) = image.size
+    ratio = max(w, h) / 20
+    image = image.resize((int(w // ratio), int(h // ratio)), PIL.Image.ANTIALIAS)
+    
+    # get center_of_mass of image
+    cy, cx = ndimage.measurements.center_of_mass(np.array(image.convert('L')))
+    
+    IMG_SIZE = 28
+    #create blank image and paste image in
+    base_image = Image.new("L", (IMG_SIZE, IMG_SIZE), 0)
+    base_image.paste(image.convert('L'), (int(IMG_SIZE / 2 - cx), int(IMG_SIZE / 2 - cy)))
+    cy, cx = ndimage.measurements.center_of_mass(np.array(base_image))
+    
+    base_image.save('image_for_predict.png')
 
-    raw_image = PIL.Image.new("RGBA", (28, 28), (0, 0, 0))
+    return base_image
 
-    x1 = int(.5 * raw_image.size[0]) - int(.5 * image.size[0])
-    y1 = int(.5 * raw_image.size[1]) - int(.5 * image.size[1])
-    x2 = int(.5 * raw_image.size[0]) + int(.5 * image.size[0])
-    y2 = int(.5 * raw_image.size[1]) + int(.5 * image.size[1])
-
-    print(x1,y1,x2,y2)
-    print(raw_image.size)
-    raw_image.paste(image, box=(x1, y1, x2, y2), mask=image)
-
-    raw_image.convert(raw_image.mode).save("image_for_predict.png")
 def predict():
+    deleteText()
+    createTextWait()
+
+    # Step 1. crop and transform
     bbox = image1.getbbox()
     cropped = image1.crop(bbox)
     filename = "image.png"
@@ -52,27 +63,38 @@ def predict():
 
     image = PIL.Image.open("image.png")
 
-    center(image)
+    image_predict = center_of_mass(image)
 
-    # Step 2. Load image,model,predict
-    image_predict = PIL.Image.open('image_for_predict.png').convert("L")
+    # Step 2. predict
     data = np.asarray(image_predict)
     data = data.flatten()
-    print(data.shape)
-    ## predict loi thi umcomment dong duoi dien shape vo nhe
-    # data = np.reshape(data, (1,784))
-    pkl_filename = "pickle_model.pkl"
-    with open(pkl_filename, 'rb') as file:
-        pickle_model = pickle.load(file)
 
-    x = pickle_model.predict(data)[0]
-    # x = random.randint(0,10)
-    # Step 3. Print
+    y_pred = pipe.predict([data, ])
+    
     deleteText()
-    createText(x)
+    createText(y_pred[0])
 
 def btn_clicked():
     print("Button Clicked")
+
+def createTextWait():
+
+    canvas.create_text(
+        709.0, 424.0,
+        text=f"   PLEASE WAIT...  ",
+        fill="#d60000",
+        font=("Roboto-Bold", int(15.0)),
+        tag = "predict_text")
+
+def createTextReady():
+    
+    canvas.create_text(
+        709.0, 424.0,
+        text=f"READY",
+        fill="#d60000",
+        font=("Roboto-Bold", int(15.0)),
+        tag = "predict_text")
+
 
 def createText(x):
     canvas.create_text(
@@ -85,8 +107,10 @@ def createText(x):
 def deleteText():
     canvas.delete("predict_text")
 def clear_frame():
-   cv.delete('all')
-   draw.rectangle((0, 0, 435, 308), fill="black")
+    cv.delete('all')
+    deleteText()
+    createTextReady()
+    draw.rectangle((0, 0, 435, 308), fill="black")
 
 def get_x_and_y(event):
     global lasx, lasy
@@ -95,8 +119,8 @@ def get_x_and_y(event):
 
 def draw_smth(event):
     global lasx, lasy
-    cv.create_line((lasx, lasy, event.x, event.y), fill='white', width=2)
-    draw.line([lasx, lasy, event.x, event.y], fill='white', width=2)
+    cv.create_line((lasx, lasy, event.x, event.y), fill='white', width=4)
+    draw.line([lasx, lasy, event.x, event.y], fill='white', width=4)
     lasx, lasy = event.x, event.y
 
 window = Tk()
