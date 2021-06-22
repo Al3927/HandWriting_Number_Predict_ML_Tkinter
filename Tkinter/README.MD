@@ -12,14 +12,11 @@ Course: Thống Kê Máy Tính Và Ứng Dụng
 git clone https://github.com/Al3927/HandWriting_Number_Predict_ML_Tkinter
 ```
 
-Install the environment:
-
-```bash
-pip install joblib scikit-learn scipy
-```
-
 ```bash
 cd Tkinter
+```
+```bash
+pip3 install -r requirements.txt
 ```
 
 ```python
