@@ -56,14 +56,6 @@ def center_of_mass(image):
 
 def predict():
     deleteText()
-    load = Label(
-        master = window,
-        text=f"PREDICTING...",
-        fg="#d60000",
-        bg="#ffffff",
-        font=("Roboto-Bold", int(15.0)))
-    load.place(x=645.0, y=412.0)
-    load.update_idletasks()
 
     # Step 1. crop and transform
     bbox = image1.getbbox()
@@ -76,6 +68,15 @@ def predict():
 
     image_predict = center_of_mass(image)
 
+    load = Label(
+        master=window,
+        text=f"PREDICTING...",
+        fg="#d60000",
+        bg="#ffffff",
+        font=("Roboto-Bold", int(15.0)))
+    load.place(x=645.0, y=412.0)
+    load.update_idletasks()
+
     # Step 2. predict
     data = np.asarray(image_predict)
     data = data.flatten()
@@ -83,6 +84,7 @@ def predict():
     y_pred = pipe.predict([data, ])
 
     load.destroy()
+    # load.pack_forget()
     deleteText()
     createText(y_pred[0])
 
@@ -99,6 +101,8 @@ def createText(x, pre_text = "THIS IS NUMBER: "):
 
 def deleteText():
     canvas.delete("predict_text")
+    # load.destroy()
+    # load.pack_forget()
 def clear_frame():
     cv.delete('all')
     deleteText()
@@ -112,8 +116,8 @@ def get_x_and_y(event):
 
 def draw_smth(event):
     global lasx, lasy
-    cv.create_line((lasx, lasy, event.x, event.y), fill='white', width=4)
-    draw.line([lasx, lasy, event.x, event.y], fill='white', width=4)
+    cv.create_line((lasx, lasy, event.x, event.y), fill='white', width=9)
+    draw.line([lasx, lasy, event.x, event.y], fill='white', width=9)
     lasx, lasy = event.x, event.y
 
 window = Tk()
@@ -129,6 +133,13 @@ canvas = Canvas(
     highlightthickness = 0,
     relief = "ridge")
 canvas.place(x = 0, y = 0)
+
+# load = Label(
+#         master = window,
+#         text=f"PREDICTING...",
+#         fg="#d60000",
+#         bg="#ffffff",
+#         font=("Roboto-Bold", int(15.0)))
 
 img0 = PhotoImage(file = f"img0.png")
 b0 = Button(
